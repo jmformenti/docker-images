@@ -21,11 +21,12 @@ RUN set -eux; \
 	sed -i "s/-Xms.*/-Xms$ELASTICSEARCH_JAVA_HEAP/" $ELASTICSEARCH_CONF_DIR/jvm.options; \
 	sed -i "s/-Xmx.*/-Xmx$ELASTICSEARCH_JAVA_HEAP/" $ELASTICSEARCH_CONF_DIR/jvm.options; \
 	sed -i "s/.*network\.host:.*/network\.host: 0.0.0.0/" $ELASTICSEARCH_CONF_DIR/elasticsearch.yml; \
-	sed -i "s/.*http\.port:.*/http\.port: 9200/" $ELASTICSEARCH_CONF_DIR/elasticsearch.yml; \
-	sed -i -e '$abootstrap.system_call_filter: false\' $ELASTICSEARCH_CONF_DIR/elasticsearch.yml; \
-	sed -i "s/.*discovery\.seed_hosts:.*/discovery\.seed_hosts: []/" $ELASTICSEARCH_CONF_DIR/elasticsearch.yml;
+	sed -i -e '$adiscovery.type: single-node\' $ELASTICSEARCH_CONF_DIR/elasticsearch.yml; \
+	sed -i -e '$abootstrap.system_call_filter: false\' $ELASTICSEARCH_CONF_DIR/elasticsearch.yml;
 
 WORKDIR $ELASTICSEARCH_DIR
+
+RUN bin/elasticsearch-plugin install --batch ingest-attachment
 
 EXPOSE 9200 9300
 
