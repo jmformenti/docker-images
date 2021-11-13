@@ -29,7 +29,7 @@ cp ~/project/docker-images/raspberrypi/wikibase/build/base/build-bare-slim.sh ~/
 3. Prepare build execution.
 ```
 sudo apt install debuerreotype
-cp ~/project/puppet/modules/docker/files/Dockerfile.slim ~/project/wikibase64/build/files/Dockerfile
+cp ~/project/puppet/modules/docker/files/Dockerfile.slim ~/project/docker-images/raspberrypi/wikibase/build/files/Dockerfile
 export REGISTRY=docker-registry.wikimedia.org
 export SRCDIR=~/project/docker-images/raspberrypi/wikibase/build/base/files
 ```
