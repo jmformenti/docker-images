@@ -90,7 +90,7 @@ git clone https://github.com/wmde/wikibase-release-pipeline.git
 cd wikibase-release-pipeline
 ./build.sh wikibase versions/wmde2.env
 ```
-2. Check that image `wikibase` and extras exists.
+2. Check that image `wikibase` exists.
 ```
 docker images
 ```
