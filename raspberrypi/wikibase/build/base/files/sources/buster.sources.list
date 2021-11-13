@@ -1,0 +1,6 @@
+deb http://mirrors.wikimedia.org/debian/ buster main
+
+deb http://security.debian.org/ buster/updates main
+deb http://mirrors.wikimedia.org/debian/ buster-updates main
+deb http://mirrors.wikimedia.org/debian/ buster-backports main contrib
+deb http://apt.wikimedia.org/wikimedia buster-wikimedia main
