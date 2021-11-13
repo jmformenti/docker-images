@@ -101,7 +101,7 @@ Run a Wikibase instance using [docker-compose](https://dev.to/elalemanyo/how-to-
 
 1. Prepare environment variables file with properly docker images names.
 ```
-cp ~/project/docker-images/raspberrypi/wikibase/build/run/template.env ~/project/wikibase-release-pipeline/example/.env
+cp ~/project/docker-images/raspberrypi/wikibase/run/template.env ~/project/wikibase-release-pipeline/example/.env
 ```
 2. Configure variables in `.env` (like `MW_ADMIN_PASS`, `DB_PASS` ..)
 3. Run.
