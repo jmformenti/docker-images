@@ -4,23 +4,27 @@ Steps to generate from scratch a Wikibase docker image for ARM 64 bits using off
 
 All this steps have been executed in a Raspberry PI 4B with [Raspbian OS 64 bits](https://downloads.raspberrypi.org/raspios_arm64/images/) and [docker >= 20.4](https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo).
 
-## Build images
+Based on the  Wikimedia Deutschland [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline) repo.
 
-### Prepare build environment
+## Build and run from scratch
 
-1. Login as pi user, create a working base dir and clone this repo:
+### Build images
+
+#### Prepare build environment
+
+1. Login as `pi` user, create a working base dir and clone this repo:
 ```
 mkdir project
 cd project
 git clone https://github.com/jmformenti/docker-images.git
 ```
 
-### Build base images
+#### Build base images
 
 1. Clone repo:
 ```
 cd ~/project
-git clone "https://gerrit.wikimedia.org/r/operations/puppet"
+git clone https://gerrit.wikimedia.org/r/operations/puppet
 ```
 2. Comment unnecessary lines in build base docker images script. Copy adapted build script.
 ```
@@ -29,7 +33,7 @@ cp ~/project/docker-images/raspberrypi/wikibase/build/base/build-bare-slim.sh ~/
 3. Prepare build execution.
 ```
 sudo apt install debuerreotype
-cp ~/project/puppet/modules/docker/files/Dockerfile.slim ~/project/docker-images/raspberrypi/wikibase/build/files/Dockerfile
+cp ~/project/puppet/modules/docker/files/Dockerfile.slim ~/project/docker-images/raspberrypi/wikibase/build/base/files/Dockerfile
 export REGISTRY=docker-registry.wikimedia.org
 export SRCDIR=~/project/docker-images/raspberrypi/wikibase/build/base/files
 ```
@@ -46,14 +50,14 @@ sudo -E ~/project/puppet/modules/docker/files/build-bare-slim.sh buster
 docker images
 ```
 
-### Build required CI images
+#### Build required CI images
 
 The goal here is get `composer-php73` docker image, required to build final Wikibase image.
 
 1. Clone repo:
 ```
 cd ~/project
-git clone "https://gerrit.wikimedia.org/r/integration/config"
+git clone https://gerrit.wikimedia.org/r/integration/config
 ```
 2. Copy adapted `Dockerfile`s inside `config` repo. These `Dockerfile`s have been generated from original `Dockerfile.template`s.
 ```
@@ -81,32 +85,83 @@ docker build -t docker-registry.wikimedia.org/releng/composer-php73 .
 docker images
 ```
 
-### Build Wikibase
+#### Build Wikibase and extras
 
-1. Generate Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
+The goal here is build docker images for Wikibase, Elasticsearch, WDQS and QuickStatements.
+
+1. Generate Elasticsearch image.
+```
+cd ~/project/docker-images/raspberrypi/wikibase/build/elasticsearch
+docker build -t elasticsearch:6.5.4 .
+```
+2. Generate Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
 ```
 cd ~/project
 git clone https://github.com/wmde/wikibase-release-pipeline.git
+cp ~/project/docker-images/raspberrypi/wikibase/build/local.env ~/project/wikibase-release-pipeline
 cd wikibase-release-pipeline
-./build.sh wikibase versions/wmde2.env
+./build.sh all versions/wmde2.env
 ```
-2. Check that image `wikibase` exists.
+3. Check that image `wikibase` and extras exists.
 ```
 docker images
 ```
 
-## Run Wikibase
+### Run
 
-Run a Wikibase instance using [docker-compose](https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo#4-install-dockercompose).
+Run a Wikibase using [docker-compose](https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo#4-install-dockercompose).
 
-1. Prepare environment variables file with properly docker images names.
+#### Prepare run environment
+
+1. Create a dir where keep docker-compose config for wikibase (f.e.: `~/docker/wikibase`).
 ```
-cp ~/project/docker-images/raspberrypi/wikibase/run/template.env ~/project/wikibase-release-pipeline/example/.env
+mkdir -p ~/docker/wikibase
+cp ~/project/wikibase-release-pipeline/example/* ~/docker/wikibase
+cp ~/project/docker-images/raspberrypi/wikibase/run/template.env ~/docker/wikibase/.env
 ```
-2. Configure variables in `.env` (like `MW_ADMIN_PASS`, `DB_PASS` ..)
-3. Run.
+2. Configure variables in `~/docker/wikibase/.env` (like `MW_ADMIN_PASS`, `DB_PASS` ..)
+
+#### Wikibase instance
+
+Here we run only a Wikibase instance without any extra tool.
+
+1. Run.
 ```
-cd ~/project/wikibase-release-pipeline/example
+cd ~/docker/wikibase
 docker-compose up -d
 ```
-4. Access to your Wikibase instance (it takes a while to boot up completely): http://<host>
+2. Access to your Wikibase instance (it takes a while to boot up completely): http://<host>
+3. Stop.
+```
+cd ~/docker/wikibase
+docker-compose stop
+```
+4. Remove.
+```
+cd ~/docker/wikibase
+docker-compose down -v
+```
+
+#### Wikibase and extras
+
+Here we run a Wikibase instance with Elasticsearch, WDQS and QuickStatements.
+
+1. Run.
+```
+cd ~/docker/wikibase
+docker-compose -f docker-compose.yml -f docker-compose.extra.yml up -d
+```
+2. Access to your Wikibase instance (it takes a while to boot up completely): 
+  * Wikibase: http://[host]
+  * WDQS: http://[host]:8834
+  * QuickStatements: http://[host]:8840
+3. Stop.
+```
+cd ~/docker/wikibase
+docker-compose -f docker-compose.yml -f docker-compose.extra.yml stop
+```
+4. Remove.
+```
+cd ~/docker/wikibase
+docker-compose -f docker-compose.yml -f docker-compose.extra.yml down -v
+```
