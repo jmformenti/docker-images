@@ -94,7 +94,11 @@ The goal here is build docker images for Wikibase, Elasticsearch, WDQS and Quick
 cd ~/project/docker-images/raspberrypi/wikibase/build/elasticsearch
 docker build -t elasticsearch:6.5.4 .
 ```
-2. Generate Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
+2. Update java version in WDQS image.
+```
+cp ~/project/docker-images/raspberrypi/wikibase/build/wdqs/* ~/project/wikibase-release-pipeline/Docker/build/WDQS
+```
+3. Generate Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
 ```
 cd ~/project
 git clone https://github.com/wmde/wikibase-release-pipeline.git
@@ -102,7 +106,7 @@ cp ~/project/docker-images/raspberrypi/wikibase/build/local.env ~/project/wikiba
 cd wikibase-release-pipeline
 ./build.sh all versions/wmde2.env
 ```
-3. Check that image `wikibase` and extras exists.
+4. Check that image `wikibase` and extras exists.
 ```
 docker images
 ```
@@ -165,3 +169,7 @@ docker-compose -f docker-compose.yml -f docker-compose.extra.yml stop
 cd ~/docker/wikibase
 docker-compose -f docker-compose.yml -f docker-compose.extra.yml down -v
 ```
+
+## Futher work
+
+Try to minimize WDQS docker image using [UBI minimal image for java 8](https://catalog.redhat.com/software/containers/ubi8/openjdk-8/5dd6a48dbed8bd164a09589a?architecture=arm64).
