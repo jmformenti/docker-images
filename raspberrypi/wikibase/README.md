@@ -37,15 +37,11 @@ cp ~/project/puppet/modules/docker/files/Dockerfile.slim ~/project/docker-images
 export REGISTRY=docker-registry.wikimedia.org
 export SRCDIR=~/project/docker-images/raspberrypi/wikibase/build/base/files
 ```
-4. Build locally our Debian `strech` base image.
-```
-sudo -E ~/project/puppet/modules/docker/files/build-bare-slim.sh stretch
-```
-5. Build locally our Debian `buster` base image.
+4. Build locally our Debian `buster` base image.
 ```
 sudo -E ~/project/puppet/modules/docker/files/build-bare-slim.sh buster
 ```
-6. Check that images `docker-registry.wikimedia.org/stretch` and `docker-registry.wikimedia.org/buster` exists.
+5. Check that image `docker-registry.wikimedia.org/buster` exists.
 ```
 docker images
 ```
@@ -67,20 +63,18 @@ cp -r ~/project/docker-images/raspberrypi/wikibase/build/ci/* ~/project/config/d
 ```
 cd ~/project/config/dockerfiles/ci-common
 docker build -t docker-registry.wikimedia.org/ci-common .
-cd ../ci-stretch
-docker build -t docker-registry.wikimedia.org/ci-stretch .
 cd ../ci-buster
 docker build -t docker-registry.wikimedia.org/ci-buster .
 cd ../sury-php
 docker build -t docker-registry.wikimedia.org/sury-php .
-cd ../php73
-docker build -t docker-registry.wikimedia.org/php73 .
 cd ../composer-scratch
 docker build -t docker-registry.wikimedia.org/composer-scratch .
-cd ../composer-php73
-docker build -t docker-registry.wikimedia.org/releng/composer-php73 .
+cd ../php74
+docker build -t docker-registry.wikimedia.org/php74 .
+cd ../composer-php74
+docker build -t docker-registry.wikimedia.org/releng/composer-php74 .
 ```
-4. Check that image `docker-registry.wikimedia.org/composer-php73` exists.
+4. Check that image `docker-registry.wikimedia.org/composer-php74` exists.
 ```
 docker images
 ```
@@ -94,19 +88,22 @@ The goal here is build docker images for Wikibase, Elasticsearch, WDQS and Quick
 cd ~/project/docker-images/raspberrypi/wikibase/build/elasticsearch
 docker build -t elasticsearch:6.5.4 .
 ```
-2. Update java version in WDQS image.
-```
-cp ~/project/docker-images/raspberrypi/wikibase/build/wdqs/* ~/project/wikibase-release-pipeline/Docker/build/WDQS
-```
-3. Generate Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
+2. Prepare to build Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
 ```
 cd ~/project
 git clone https://github.com/wmde/wikibase-release-pipeline.git
-cp ~/project/docker-images/raspberrypi/wikibase/build/local.env ~/project/wikibase-release-pipeline
-cd wikibase-release-pipeline
-./build.sh all versions/wmde2.env
+cp ~/project/docker-images/raspberrypi/wikibase/build/wikibase/local.env ~/project/wikibase-release-pipeline
 ```
-4. Check that image `wikibase` and extras exists.
+3. Update wikibase docker files.
+```
+cp -r ~/project/docker-images/raspberrypi/wikibase/build/wikibase/Docker/* ~/project/wikibase-release-pipeline/Docker/build/
+```
+4. Generate Wikibase docker image [building](https://github.com/wmde/wikibase-release-pipeline/blob/main/docs/topics/pipeline.md) from [wikibase-release-pipeline](https://github.com/wmde/wikibase-release-pipeline).
+```
+cd ~/project/wikibase-release-pipeline
+./build.sh all versions/wmde4.env
+```
+5. Check that image `wikibase` and extras exists.
 ```
 docker images
 ```
